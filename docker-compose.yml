@@ -1,6 +1,5 @@
 version: "3"
 volumes:
-  /media/paiol:
   bahut-nextcloud:
   bahut-database:
 networks:
@@ -10,6 +9,8 @@ services:
   bnextcloud:
     image: nextcloud
     restart: always
+    ports:
+      - "8080:80"
     volumes:
       - /media/paiol:/data
       - bahut-nextcloud:/var/www/html
