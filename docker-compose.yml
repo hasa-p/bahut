@@ -9,22 +9,37 @@ services:
   bnextcloud:
     image: nextcloud
     container_name: bnextcloud
-    restart: always
+    restart: unless-stopped
     ports:
       - "8080:80"
     volumes:
+      - ./html:/var/www/html
       - /media/paiol:/data
-      - bahut-nextcloud:/var/www/html
     networks:
       - bahut-net
   bdatabase:
-    image: postgres
+    image: mariadb
     container_name: bdatabase
-    restart: always
+    restart: unless-stopped
     volumes:
-      - bahut-database:/var/lib/postgresql/data
+      - bahut-db:/var/lib/mysql/data
     environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_HOST=${MYSQL_HOST}
+    networks:
+      - bahut-net
+  bnpm:
+    image: "jc21/nginx-proxy-manager:latest"
+    container_name: bnpm
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    volumes:
+      - ./data:/data
     networks:
       - bahut-net
 
