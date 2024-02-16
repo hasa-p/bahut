@@ -1,25 +1,24 @@
 version: "3"
 volumes:
-  bahut-nextcloud:
-  bahut-database:
+  nextcloud:
+  database:
+  npm:
 networks:
   bahut-net:
 
 services:
   bnextcloud:
-    build: 
-      context: .
-      dockerfile: Dockerfile
+    image: nextcloud
     container_name: bnextcloud
     restart: unless-stopped
     ports:
       - "8080:80"
     volumes:
-      - ./html:/var/www/html
+      - nextcloud:/var/www/html
       - /media/paiol:/var/www/html/data
     environment:
       - NEXTCLOUD_TRUSTED_DOMAINS=${TRUSTED_DOMAINS}
-      - OVERWRITEPROTOCOL="https" 
+      - OVERWRITEPROTOCOL=https
     networks:
       - bahut-net
   bdatabase:
@@ -28,12 +27,13 @@ services:
     restart: always
     command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
     volumes:
-      - bahut-db:/var/lib/mysql/data
+      - database:/var/lib/mysql/data
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MYSQL_DATABASE=${DB_DATABASE}
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_HOST=${DB_HOST}
     networks:
       - bahut-net
   bnpm:
@@ -45,6 +45,7 @@ services:
       - "81:81"
       - "443:443"
     volumes:
-      - ./data:/data
+      - npm:/data
+      - ./letsencrypt:/etc/letsencrypt
     networks:
       - bahut-net
