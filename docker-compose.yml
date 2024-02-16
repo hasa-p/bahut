@@ -7,27 +7,33 @@ networks:
 
 services:
   bnextcloud:
-    image: nextcloud
+    build: 
+      context: .
+      dockerfile: Dockerfile
     container_name: bnextcloud
     restart: unless-stopped
     ports:
       - "8080:80"
     volumes:
       - ./html:/var/www/html
-      - /media/paiol:/data
+      - /media/paiol:/var/www/html/data
+    environment:
+      - NEXTCLOUD_TRUSTED_DOMAINS=${TRUSTED_DOMAINS}
+      - OVERWRITEPROTOCOL="https" 
     networks:
       - bahut-net
   bdatabase:
     image: mariadb
     container_name: bdatabase
-    restart: unless-stopped
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
     volumes:
       - bahut-db:/var/lib/mysql/data
     environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
     networks:
       - bahut-net
   bnpm:
@@ -42,4 +48,3 @@ services:
       - ./data:/data
     networks:
       - bahut-net
-
