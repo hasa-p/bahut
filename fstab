@@ -1,1 +1,1 @@
-UUID={dev-uuid}	/media/paiol	ext4	defaults	0	2
+UUID={dev-uuid}	/mnt/storage	ext4	defaults,nofail,noatime	0	2
