@@ -1,1 +1,11 @@
-.env
+# Secrets
+**/.env
+**/*.key
+**/*.pem
+secrets/
+
+# Logs and cache
+*.log
+*.tmp
+docker/nextcloud/nginx/cache/
+
