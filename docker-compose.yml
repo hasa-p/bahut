@@ -1,51 +1,55 @@
-version: "3"
-volumes:
-  nextcloud:
-  database:
-  npm:
-networks:
-  bahut-net:
+version: '3.8'
 
 services:
-  bnextcloud:
-    image: nextcloud
-    container_name: bnextcloud
+  nextcloud:
+    image: nextcloud:latest
+    container_name: nextcloud
     restart: unless-stopped
-    ports:
-      - "8080:80"
+    networks:
+      - nextcloud_net
     volumes:
       - nextcloud:/var/www/html
-      - /media/paiol:/var/www/html/data
+      - /mnt/storage/nextcloud_data:/var/www/html/data
     environment:
-      - NEXTCLOUD_TRUSTED_DOMAINS=${TRUSTED_DOMAINS}
-      - OVERWRITEPROTOCOL=https
-    networks:
-      - bahut-net
-  bdatabase:
-    image: mariadb
-    container_name: bdatabase
-    restart: always
-    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
-    volumes:
-      - database:/var/lib/mysql/data
-    environment:
-      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${DB_DATABASE}
-      - MYSQL_USER=${DB_USER}
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-      - MYSQL_HOST=${DB_HOST}
-    networks:
-      - bahut-net
-  bnpm:
-    image: "jc21/nginx-proxy-manager:latest"
-    container_name: bnpm
+      - MYSQL_HOST=nextcloud_db
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER}
+      - NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD}
+
+  nextcloud_db:
+    image: mariadb:10.6
+    container_name: nextcloud_db
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "81:81"
-      - "443:443"
-    volumes:
-      - npm:/data
-      - ./letsencrypt:/etc/letsencrypt
     networks:
-      - bahut-net
+      - nextcloud_net
+    volumes:
+      - nextcloud_db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    networks:
+      - nextcloud_net
+    volumes:
+      - ${CLOUDFLARED_CREDENTIALS_FILE}:/etc/cloudflared/creds.json
+    command: tunnel run --url http://nextcloud:80
+    environment:
+      - TUNNEL_ID=${CLOUDFLARED_TUNNEL_ID}
+
+volumes:
+  nextcloud:
+    driver: local
+  nextcloud_db:
+    driver: local
+
+networks:
+  nextcloud_net:
+    driver: bridge
+

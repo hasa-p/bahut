@@ -1,0 +1,7 @@
+tunnel: ${CLOUDFLARED_TUNNEL_ID}
+credentials-file: /etc/cloudflared/creds.json
+ingress:
+  - hostname: nextcloud.domain.com
+    service: http://nextcloud:80
+  - service: http_status:404
+
