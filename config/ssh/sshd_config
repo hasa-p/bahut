@@ -1,5 +1,6 @@
-# Hardened SSH
+# Hardened SSH + Tailscale compatibility
 Port 2222
 PermitRootLogin no
 PasswordAuthentication no
 AllowUsers username
+AllowAgentForwarding yes
